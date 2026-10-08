@@ -27,7 +27,10 @@
   const GOOGLE_MAPS_URL =
     "https://www.google.com/maps/place//data=!4m3!3m2!1s0x12a4a35c26885825:0xa52c4df1ad24f88c!12e1";
 
-  fetch(`${SUPABASE_URL}/rest/v1/nfc_stats`, {
+
+  // Registrar el toque NFC
+  fetch(`${SUPABASE_URL}/rest/v1/nfc_events`, {
+
     method: "POST",
 
     headers: {
@@ -39,12 +42,15 @@
 
     body: JSON.stringify({
       restaurant: "Tzura Steak House",
-      taps: 1,
-      reviews: 0
+      event: "nfc_tap"
     })
 
   })
+
   .finally(() => {
+
+    // Después de registrar el toque,
+    // enviar al cliente directamente a Google Maps
 
     window.location.href = GOOGLE_MAPS_URL;
 
