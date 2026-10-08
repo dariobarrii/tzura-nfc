@@ -3,59 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Tzura Steak House</title>
-
-  <style>
-    body {
-      margin: 0;
-      background: #111;
-    }
-  </style>
 </head>
 
 <body>
 
 <script>
-
   const SUPABASE_URL =
     "https://qcvhxrudzjlgqlhvnkkl.supabase.co";
 
   const SUPABASE_KEY =
     "sb_publishable_OpfoWwYD2lvC9dVTT_UT8A_Bvz_GKRw";
 
+  // Google Maps - Tzura Steak House
   const GOOGLE_MAPS_URL =
     "https://www.google.com/maps/place//data=!4m3!3m2!1s0x12a4a35c26885825:0xa52c4df1ad24f88c!12e1";
 
+  // Intentar abrir Google Maps como aplicación
+  const GOOGLE_MAPS_APP =
+    "comgooglemaps://?url=" + encodeURIComponent(GOOGLE_MAPS_URL);
 
-  // Registrar el toque NFC
+  // Registrar el toque NFC en Supabase
   fetch(`${SUPABASE_URL}/rest/v1/nfc_events`, {
-
     method: "POST",
-
     headers: {
       "Content-Type": "application/json",
       "apikey": SUPABASE_KEY,
       "Authorization": `Bearer ${SUPABASE_KEY}`,
       "Prefer": "return=minimal"
     },
-
     body: JSON.stringify({
       restaurant: "Tzura Steak House",
       event: "nfc_tap"
     })
-
   })
-
   .finally(() => {
 
-    // Después de registrar el toque,
-    // enviar al cliente directamente a Google Maps
+    // Primero intenta abrir la aplicación Google Maps
+    window.location.href = GOOGLE_MAPS_APP;
 
-    window.location.href = GOOGLE_MAPS_URL;
+    // Si el sistema no permite abrir la app,
+    // después de 1 segundo abre Google Maps en el navegador
+    setTimeout(() => {
+      window.location.href = GOOGLE_MAPS_URL;
+    }, 1000);
 
   });
-
 </script>
 
 </body>
