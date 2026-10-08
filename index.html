@@ -9,98 +9,48 @@
   <style>
     body {
       margin: 0;
-      padding: 0;
       background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .container {
-      width: 90%;
-      max-width: 420px;
-    }
-
-    h1 {
-      font-size: 30px;
-      margin-bottom: 15px;
-    }
-
-    p {
-      font-size: 18px;
-      color: #ddd;
-      margin-bottom: 30px;
-    }
-
-    .review-button {
-      display: inline-block;
-      background: #b08d57;
-      color: white;
-      text-decoration: none;
-      padding: 16px 28px;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: bold;
-    }
-
-    .review-button:hover {
-      opacity: 0.9;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="container">
+<script>
 
-    <h1>Tzura Steak House</h1>
+  const SUPABASE_URL =
+    "https://qcvhxrudzjlgqlhvnkkl.supabase.co";
 
-    <p>
-      ¿Disfrutaste tu experiencia?
-      <br><br>
-      Déjanos tu opinión en Google ⭐
-    </p>
+  const SUPABASE_KEY =
+    "sb_publishable_OpfoWwYD2lvC9dVTT_UT8A_Bvz_GKRw";
 
-    <a
-      class="review-button"
-      href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x12a4a35c26885825:0xa52c4df1ad24f88c!12e1"
-      target="_blank"
-    >
-      ⭐ Dejar una reseña
-    </a>
+  const GOOGLE_MAPS_URL =
+    "https://www.google.com/maps/place//data=!4m3!3m2!1s0x12a4a35c26885825:0xa52c4df1ad24f88c!12e1";
 
-  </div>
+  fetch(`${SUPABASE_URL}/rest/v1/nfc_stats`, {
+    method: "POST",
 
-  <script>
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`,
+      "Prefer": "return=minimal"
+    },
 
-    const SUPABASE_URL =
-      "https://qcvhxrudzjlgqlhvnkkl.supabase.co";
+    body: JSON.stringify({
+      restaurant: "Tzura Steak House",
+      taps: 1,
+      reviews: 0
+    })
 
-    const SUPABASE_KEY =
-      "sb_publishable_OpfoWwYD2lvC9dVTT_UT8A_Bvz_GKRw";
+  })
+  .finally(() => {
 
-    fetch(`${SUPABASE_URL}/rest/v1/nfc_stats`, {
-      method: "POST",
+    window.location.href = GOOGLE_MAPS_URL;
 
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_KEY,
-        "Authorization": `Bearer ${SUPABASE_KEY}`,
-        "Prefer": "return=minimal"
-      },
+  });
 
-      body: JSON.stringify({
-        restaurant: "Tzura Steak House",
-        taps: 1,
-        reviews: 0
-      })
-    });
-
-  </script>
+</script>
 
 </body>
 </html>
