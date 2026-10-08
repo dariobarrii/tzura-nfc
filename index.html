@@ -24,8 +24,8 @@
   const SUPABASE_KEY =
     "sb_publishable_OpfoWwYD2lvC9dVTT_UT8A_Bvz_GKRw";
 
-  const GOOGLE_MAPS_URL =
-    "https://www.google.com/maps/place//data=!4m3!3m2!1s0x12a4a35c26885825:0xa52c4df1ad24f88c!12e1";
+  const GOOGLE_REVIEW_URL =
+    "https://search.google.com/local/writereview?placeid=ChIJJViIJlyjpBIRjPgkrfFNLKU";
 
 
   // Registrar el toque NFC
@@ -50,9 +50,9 @@
   .finally(() => {
 
     // Después de registrar el toque,
-    // enviar al cliente directamente a Google Maps
+    // abrir directamente la pantalla de reseña
 
-    window.location.href = GOOGLE_MAPS_URL;
+    window.location.href = GOOGLE_REVIEW_URL;
 
   });
 
