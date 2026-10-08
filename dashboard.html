@@ -78,14 +78,6 @@
       color: #bbb;
     }
 
-    .daily-card {
-      border: 1px solid #444;
-    }
-
-    .daily-card h2 {
-      font-size: 36px;
-    }
-
     .chart-container {
       max-width: 1000px;
       margin: 30px auto;
@@ -141,16 +133,6 @@
   <div class="card">
     <h2 id="total">0</h2>
     <p>Taps totales</p>
-  </div>
-
-  <div class="card daily-card">
-    <h2 id="startOfDay">0</h2>
-    <p>⭐ Reseñas al comenzar el día</p>
-  </div>
-
-  <div class="card daily-card">
-    <h2 id="todayReviews">0</h2>
-    <p>🟢 Reseñas conseguidas hoy</p>
   </div>
 
   <div class="card">
@@ -249,19 +231,12 @@ async function loadData() {
 
     const now = new Date();
 
-    // Inicio del día: 00:00
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
-    // Siguiente día: 00:00
-    const tomorrowStart = new Date(todayStart);
-    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
-
-    // Hace 7 días
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(now.getDate() - 7);
 
-    // Hace 30 días
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(now.getDate() - 30);
 
@@ -270,50 +245,23 @@ async function loadData() {
     // CONTADORES
     // ==============================
 
-    // Total de taps
-    const total = data.length;
-
-
-    // Taps realizados hoy
     const today = data.filter(item => {
 
-      const date = new Date(item.created_at);
-
-      return date >= todayStart && date < tomorrowStart;
+      return new Date(item.created_at) >= todayStart;
 
     }).length;
 
 
-    // Taps antes de las 00:00 de hoy
-    const startOfDay = data.filter(item => {
-
-      const date = new Date(item.created_at);
-
-      return date < todayStart;
-
-    }).length;
-
-
-    // Reseñas / taps conseguidos hoy
-    const todayReviews = today;
-
-
-    // Últimos 7 días
     const sevenDays = data.filter(item => {
 
-      const date = new Date(item.created_at);
-
-      return date >= sevenDaysAgo;
+      return new Date(item.created_at) >= sevenDaysAgo;
 
     }).length;
 
 
-    // Últimos 30 días
     const thirtyDays = data.filter(item => {
 
-      const date = new Date(item.created_at);
-
-      return date >= thirtyDaysAgo;
+      return new Date(item.created_at) >= thirtyDaysAgo;
 
     }).length;
 
@@ -323,13 +271,7 @@ async function loadData() {
     // ==============================
 
     document.getElementById("total").textContent =
-      total;
-
-    document.getElementById("startOfDay").textContent =
-      startOfDay;
-
-    document.getElementById("todayReviews").textContent =
-      "+" + todayReviews;
+      data.length;
 
     document.getElementById("today").textContent =
       today;
@@ -357,7 +299,6 @@ async function loadData() {
 
       row.innerHTML = `
         <td>${date.toLocaleDateString("es-ES")}</td>
-
         <td>${date.toLocaleTimeString("es-ES", {
           hour: "2-digit",
           minute: "2-digit"
@@ -391,9 +332,11 @@ async function loadData() {
 
         const eventDate = new Date(item.created_at);
 
-        return eventDate >= date && eventDate < nextDay;
+        return eventDate >= date &&
+               eventDate < nextDay;
 
       }).length;
+
 
       labels.push(
         date.toLocaleDateString("es-ES", {
@@ -401,6 +344,7 @@ async function loadData() {
           month: "2-digit"
         })
       );
+
 
       values.push(count);
 
@@ -423,17 +367,25 @@ async function loadData() {
     tapsChart = new Chart(
       document.getElementById("tapsChart"),
       {
+
         type: "line",
 
         data: {
+
           labels: labels,
 
           datasets: [{
+
             label: "Taps por día",
+
             data: values,
+
             tension: 0.3,
+
             fill: false
+
           }]
+
         },
 
         options: {
@@ -467,8 +419,11 @@ async function loadData() {
               beginAtZero: true,
 
               ticks: {
+
                 color: "#aaa",
+
                 precision: 0
+
               }
 
             }
@@ -493,20 +448,27 @@ async function loadData() {
 
     });
 
+
     status.textContent =
       `Última actualización: ${hora} · Se actualiza automáticamente cada 30 segundos`;
 
-  } catch (error) {
+  }
+
+  catch (error) {
 
     console.error(error);
 
     status.textContent =
       "❌ No se pudieron actualizar los datos.";
 
-  } finally {
+  }
+
+  finally {
 
     button.disabled = false;
-    button.textContent = "🔄 Actualizar datos";
+
+    button.textContent =
+      "🔄 Actualizar datos";
 
   }
 
