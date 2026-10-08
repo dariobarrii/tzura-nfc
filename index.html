@@ -24,11 +24,12 @@
   const SUPABASE_KEY =
     "sb_publishable_OpfoWwYD2lvC9dVTT_UT8A_Bvz_GKRw";
 
+  // Enlace de Tzura que abre el apartado de reseña
   const GOOGLE_MAPS_URL =
     "https://www.google.com/maps/place//data=!4m3!3m2!1s0x12a4a35c26885825:0xa52c4df1ad24f88c!12e1";
 
 
-  // Registrar el toque NFC
+  // Registrar el toque NFC en Supabase
   fetch(`${SUPABASE_URL}/rest/v1/nfc_events`, {
 
     method: "POST",
@@ -49,10 +50,28 @@
 
   .finally(() => {
 
-    // Después de registrar el toque,
-    // enviar al cliente directamente a Google Maps
+    /*
+      Intentar abrir la URL directamente
+      en la aplicación Google Maps de iPhone.
+    */
 
-    window.location.href = GOOGLE_MAPS_URL;
+    const GOOGLE_MAPS_APP =
+      "comgooglemapsurl://" +
+      encodeURIComponent(GOOGLE_MAPS_URL);
+
+    window.location.href = GOOGLE_MAPS_APP;
+
+
+    /*
+      Si iOS no permite abrir Google Maps,
+      usamos la URL normal como respaldo.
+    */
+
+    setTimeout(() => {
+
+      window.location.href = GOOGLE_MAPS_URL;
+
+    }, 1500);
 
   });
 
