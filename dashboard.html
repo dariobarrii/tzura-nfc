@@ -78,6 +78,14 @@
       color: #bbb;
     }
 
+    .daily-card {
+      border: 1px solid #444;
+    }
+
+    .daily-card h2 {
+      font-size: 36px;
+    }
+
     .chart-container {
       max-width: 1000px;
       margin: 30px auto;
@@ -133,6 +141,16 @@
   <div class="card">
     <h2 id="total">0</h2>
     <p>Taps totales</p>
+  </div>
+
+  <div class="card daily-card">
+    <h2 id="startOfDay">0</h2>
+    <p>⭐ Reseñas al comenzar el día</p>
+  </div>
+
+  <div class="card daily-card">
+    <h2 id="todayReviews">0</h2>
+    <p>🟢 Reseñas conseguidas hoy</p>
   </div>
 
   <div class="card">
@@ -231,12 +249,19 @@ async function loadData() {
 
     const now = new Date();
 
+    // Inicio del día: 00:00
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
+    // Siguiente día: 00:00
+    const tomorrowStart = new Date(todayStart);
+    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+
+    // Hace 7 días
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(now.getDate() - 7);
 
+    // Hace 30 días
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(now.getDate() - 30);
 
@@ -245,21 +270,66 @@ async function loadData() {
     // CONTADORES
     // ==============================
 
-    const today = data.filter(item =>
-      new Date(item.created_at) >= todayStart
-    ).length;
+    // Total de taps
+    const total = data.length;
 
-    const sevenDays = data.filter(item =>
-      new Date(item.created_at) >= sevenDaysAgo
-    ).length;
 
-    const thirtyDays = data.filter(item =>
-      new Date(item.created_at) >= thirtyDaysAgo
-    ).length;
+    // Taps realizados hoy
+    const today = data.filter(item => {
 
+      const date = new Date(item.created_at);
+
+      return date >= todayStart && date < tomorrowStart;
+
+    }).length;
+
+
+    // Taps antes de las 00:00 de hoy
+    const startOfDay = data.filter(item => {
+
+      const date = new Date(item.created_at);
+
+      return date < todayStart;
+
+    }).length;
+
+
+    // Reseñas / taps conseguidos hoy
+    const todayReviews = today;
+
+
+    // Últimos 7 días
+    const sevenDays = data.filter(item => {
+
+      const date = new Date(item.created_at);
+
+      return date >= sevenDaysAgo;
+
+    }).length;
+
+
+    // Últimos 30 días
+    const thirtyDays = data.filter(item => {
+
+      const date = new Date(item.created_at);
+
+      return date >= thirtyDaysAgo;
+
+    }).length;
+
+
+    // ==============================
+    // MOSTRAR CONTADORES
+    // ==============================
 
     document.getElementById("total").textContent =
-      data.length;
+      total;
+
+    document.getElementById("startOfDay").textContent =
+      startOfDay;
+
+    document.getElementById("todayReviews").textContent =
+      "+" + todayReviews;
 
     document.getElementById("today").textContent =
       today;
@@ -287,6 +357,7 @@ async function loadData() {
 
       row.innerHTML = `
         <td>${date.toLocaleDateString("es-ES")}</td>
+
         <td>${date.toLocaleTimeString("es-ES", {
           hour: "2-digit",
           minute: "2-digit"
@@ -336,12 +407,18 @@ async function loadData() {
     }
 
 
-    // Eliminar gráfico anterior
+    // ==============================
+    // ELIMINAR GRÁFICO ANTERIOR
+    // ==============================
 
     if (tapsChart) {
       tapsChart.destroy();
     }
 
+
+    // ==============================
+    // CREAR GRÁFICO
+    // ==============================
 
     tapsChart = new Chart(
       document.getElementById("tapsChart"),
@@ -360,31 +437,40 @@ async function loadData() {
         },
 
         options: {
+
           responsive: true,
 
           plugins: {
+
             legend: {
+
               labels: {
                 color: "white"
               }
+
             }
+
           },
 
           scales: {
 
             x: {
+
               ticks: {
                 color: "#aaa"
               }
+
             },
 
             y: {
+
               beginAtZero: true,
 
               ticks: {
                 color: "#aaa",
                 precision: 0
               }
+
             }
 
           }
@@ -400,9 +486,11 @@ async function loadData() {
     // ==============================
 
     const hora = new Date().toLocaleTimeString("es-ES", {
+
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit"
+
     });
 
     status.textContent =
