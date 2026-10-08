@@ -15,11 +15,11 @@
   const SUPABASE_KEY =
     "sb_publishable_OpfoWwYD2lvC9dVTT_UT8A_Bvz_GKRw";
 
-  // Enlace DIRECTO a escribir una reseña de Tzura
-  const REVIEW_URL =
-    "https://search.google.com/local/writereview?placeid=ChIJJViIJlyjpBIRjPgkrfFNLKU";
+  // Ficha exacta de Tzura en Google Maps
+  const GOOGLE_MAPS_URL =
+    "https://www.google.com/maps/place//data=!4m3!3m2!1s0x12a4a35c26885825:0xa52c4df1ad24f88c!12e1";
 
-  // Registrar el toque NFC
+  // Registrar el toque NFC en Supabase
   fetch(`${SUPABASE_URL}/rest/v1/nfc_events`, {
     method: "POST",
     headers: {
@@ -34,8 +34,10 @@
     })
   })
   .finally(() => {
-    // Ir directamente al formulario de reseña
-    window.location.href = REVIEW_URL;
+
+    // Abrir Google Maps
+    window.location.href = GOOGLE_MAPS_URL;
+
   });
 </script>
 
