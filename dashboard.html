@@ -1,498 +1,967 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tzura Steak House | Dashboard NFC</title>
+  <meta name="theme-color" content="#0b0908">
 
-  <title>Dashboard - Tzura Steak House</title>
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
+    :root {
+      --bg: #0b0908;
+      --panel: #15110e;
+      --panel2: #1c1611;
+      --border: #38281c;
+      --gold: #b58a5a;
+      --gold-light: #d9b783;
+      --text: #f5eee5;
+      --muted: #a99b8c;
+      --green: #91c7a0;
+      --red: #e69a8e;
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      padding: 30px;
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: white;
+      background:
+        radial-gradient(ellipse at top right, #291b10 0, transparent 38%),
+        var(--bg);
+      color: var(--text);
+      font-family: "DM Sans", sans-serif;
+      min-height: 100vh;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 15px;
+    .container {
+      width: min(1200px, 100%);
+      margin: auto;
+      padding: 28px 22px 45px;
     }
 
-    .update-container {
-      text-align: center;
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
       margin-bottom: 30px;
     }
 
-    #updateButton {
-      background: #2a2a2a;
-      color: white;
-      border: 1px solid #555;
-      padding: 12px 22px;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
     }
 
-    #updateButton:hover {
-      background: #3a3a3a;
-    }
-
-    #updateButton:disabled {
-      opacity: 0.6;
-      cursor: wait;
-    }
-
-    #status {
-      margin-top: 10px;
-      color: #aaa;
-      font-size: 14px;
-    }
-
-    .cards {
+    .brand-mark {
+      width: 49px;
+      height: 49px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      place-items: center;
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      border-radius: 14px;
+      font-family: "Playfair Display", serif;
+      font-size: 25px;
+    }
+
+    h1, h2, p { margin-top: 0; }
+
+    h1 {
+      font-family: "Playfair Display", serif;
+      font-size: clamp(23px, 4vw, 33px);
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 10px 13px;
+      border-radius: 30px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      display: inline-block;
+    }
+
+    .dot.error { background: var(--red); }
+
+    .section-title {
+      font-family: "Playfair Display", serif;
+      font-size: 23px;
+      font-weight: 600;
+      margin: 0 0 16px;
+    }
+
+    .section-subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+      margin: -7px 0 18px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 15px;
-      max-width: 1000px;
-      margin: auto;
+      margin-bottom: 30px;
     }
 
     .card {
-      background: #1d1d1d;
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      background: linear-gradient(145deg, #19130f, #100d0b);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      min-width: 0;
     }
 
-    .card h2 {
-      margin: 0;
-      font-size: 32px;
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 15px;
     }
 
-    .card p {
-      margin-top: 8px;
-      color: #bbb;
+    .stat-value {
+      font-size: clamp(27px, 3vw, 35px);
+      line-height: 1.1;
+      font-weight: 600;
+      color: var(--gold-light);
+      overflow-wrap: anywhere;
     }
 
-    .chart-container {
-      max-width: 1000px;
-      margin: 30px auto;
-      background: #1d1d1d;
-      padding: 20px;
-      border-radius: 12px;
+    .stat-foot {
+      margin-top: 10px;
+      color: #847568;
+      font-size: 11px;
     }
 
-    .table-container {
-      max-width: 1000px;
-      margin: 30px auto;
-      background: #1d1d1d;
-      padding: 20px;
-      border-radius: 12px;
-      overflow-x: auto;
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
+      gap: 18px;
+      margin-bottom: 30px;
+      align-items: start;
     }
+
+    .chart-wrap {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+
+    .daily-card { padding: 23px; }
+
+    .date-label {
+      display: inline-block;
+      color: var(--gold-light);
+      font-size: 12px;
+      background: #2b1e14;
+      border: 1px solid #4a3422;
+      border-radius: 30px;
+      padding: 7px 11px;
+      margin-bottom: 19px;
+    }
+
+    .field-label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      min-width: 0;
+      color: var(--text);
+      background: #0d0a08;
+      border: 1px solid #493423;
+      border-radius: 10px;
+      padding: 13px;
+      font: inherit;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px #b58a5a22;
+    }
+
+    .save-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: end;
+      margin-bottom: 17px;
+    }
+
+    button {
+      cursor: pointer;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      transition: .18s ease;
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: wait;
+    }
+
+    .primary {
+      color: #17100a;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      border: 1px solid var(--gold);
+      white-space: nowrap;
+    }
+
+    .primary:hover:not(:disabled) {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .secondary {
+      color: var(--gold-light);
+      background: #21170f;
+      border: 1px solid #63452a;
+    }
+
+    .gain-box {
+      margin-top: 20px;
+      border: 1px solid #4a3422;
+      background: linear-gradient(120deg, #21170f, #15100c);
+      border-radius: 14px;
+      padding: 17px;
+    }
+
+    .gain-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .gain-value {
+      color: var(--gold-light);
+      font-size: 31px;
+      font-weight: 600;
+    }
+
+    .gain-note {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+      margin-top: 7px;
+    }
+
+    .message {
+      display: none;
+      padding: 12px 14px;
+      margin: 0 0 18px;
+      border-radius: 10px;
+      font-size: 12px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .message.show { display: block; }
+    .message.success { color: var(--green); background: #152219; border: 1px solid #294d34; }
+    .message.error { color: var(--red); background: #261513; border: 1px solid #63302a; }
+    .message.info { color: var(--gold-light); background: #21170f; border: 1px solid #4a3422; }
+
+    .table-card { padding: 0; overflow: hidden; }
+
+    .table-head {
+      padding: 22px 23px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table-head .section-title { margin: 0; }
+
+    .table-wrap { overflow-x: auto; }
 
     table {
       width: 100%;
       border-collapse: collapse;
-    }
-
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid #333;
-      text-align: center;
+      text-align: left;
+      white-space: nowrap;
     }
 
     th {
-      color: #bbb;
+      background: #110d0a;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      padding: 15px 20px;
+    }
+
+    td {
+      padding: 15px 20px;
+      border-top: 1px solid #2b2018;
+      font-size: 12px;
+      color: #e7dbcf;
+    }
+
+    tbody tr:hover { background: #21170f77; }
+
+    .event-number {
+      color: var(--gold-light);
+      font-weight: 700;
+    }
+
+    .event-badge {
+      display: inline-block;
+      padding: 5px 9px;
+      color: var(--green);
+      background: #152219;
+      border: 1px solid #294d34;
+      border-radius: 30px;
+      font-size: 10px;
+    }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      padding: 35px 15px;
+      white-space: normal;
+    }
+
+    .table-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 15px 20px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .footer {
+      color: #76675a;
+      text-align: center;
+      font-size: 11px;
+      padding-top: 25px;
+    }
+
+    @media (max-width: 850px) {
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      .container { padding: 18px 13px 30px; }
+      .topbar { margin-bottom: 22px; }
+      .card { padding: 17px; }
+      .stats { gap: 10px; }
+      .stat-label { min-height: 30px; font-size: 12px; }
+      .stat-value { font-size: 27px; }
+      .save-row { grid-template-columns: 1fr; }
+      .primary { width: 100%; }
+      .chart-wrap { height: 250px; }
+      .table-head { padding: 18px; }
+      th, td { padding: 13px 15px; }
     }
   </style>
 </head>
 
 <body>
+  <main class="container">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">T</div>
+        <div>
+          <h1>Tzura Steak House</h1>
+          <p class="subtitle">NFC Reviews · Panel de control</p>
+        </div>
+      </div>
+      <div class="status">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">Conectando con Supabase...</span>
+      </div>
+    </header>
 
-<h1>Tzura Steak House</h1>
+    <div id="globalMessage" class="message" role="status" aria-live="polite"></div>
 
-<div class="update-container">
+    <h2 class="section-title">Resumen de actividad</h2>
+    <p class="section-subtitle">Lecturas registradas por las tarjetas NFC de Tzura Steak House.</p>
 
-  <button id="updateButton" onclick="loadData()">
-    🔄 Actualizar datos
-  </button>
+    <section class="stats">
+      <article class="card">
+        <div class="stat-label">Total de lecturas NFC</div>
+        <div class="stat-value" id="totalTaps">—</div>
+        <div class="stat-foot">Desde el inicio del registro</div>
+      </article>
+      <article class="card">
+        <div class="stat-label">Lecturas de hoy</div>
+        <div class="stat-value" id="todayTaps">—</div>
+        <div class="stat-foot">Día actual · hora de Madrid</div>
+      </article>
+      <article class="card">
+        <div class="stat-label">Últimos 7 días</div>
+        <div class="stat-value" id="weekTaps">—</div>
+        <div class="stat-foot">Incluye el día de hoy</div>
+      </article>
+      <article class="card">
+        <div class="stat-label">Últimos 30 días</div>
+        <div class="stat-value" id="monthTaps">—</div>
+        <div class="stat-foot">Incluye el día de hoy</div>
+      </article>
+    </section>
 
-  <div id="status">
-    Cargando datos...
-  </div>
+    <section class="layout">
+      <article class="card">
+        <h2 class="section-title">Actividad NFC</h2>
+        <p class="section-subtitle">Lecturas por día durante los últimos 30 días.</p>
+        <div class="chart-wrap">
+          <canvas id="activityChart" aria-label="Gráfico de lecturas NFC"></canvas>
+        </div>
+      </article>
 
-</div>
+      <article class="card daily-card">
+        <h2 class="section-title">Control diario de reseñas</h2>
+        <p class="section-subtitle">Anotá el contador visible en Google al abrir y al cerrar el restaurante.</p>
+        <div class="date-label" id="todayDate">Fecha de hoy</div>
 
-<div class="cards">
+        <div class="save-row">
+          <div>
+            <label class="field-label" for="openingCount">Reseñas al comenzar el día</label>
+            <input id="openingCount" type="number" min="0" step="1" placeholder="Ej.: 125">
+          </div>
+          <button class="primary" id="saveOpening" type="button">Guardar apertura</button>
+        </div>
 
-  <div class="card">
-    <h2 id="total">0</h2>
-    <p>Taps totales</p>
-  </div>
+        <div class="save-row">
+          <div>
+            <label class="field-label" for="closingCount">Reseñas al terminar el día</label>
+            <input id="closingCount" type="number" min="0" step="1" placeholder="Ej.: 132">
+          </div>
+          <button class="primary" id="saveClosing" type="button">Guardar cierre</button>
+        </div>
 
-  <div class="card">
-    <h2 id="today">0</h2>
-    <p>Taps hoy</p>
-  </div>
+        <div class="gain-box">
+          <div class="gain-label">Reseñas ganadas hoy</div>
+          <div class="gain-value" id="reviewsGained">—</div>
+          <div class="gain-note" id="gainNote">Guardá los valores de apertura y cierre para calcular el resultado.</div>
+        </div>
 
-  <div class="card">
-    <h2 id="sevenDays">0</h2>
-    <p>Últimos 7 días</p>
-  </div>
+        <p class="gain-note" style="margin-bottom:0">
+          Este cálculo compara los valores que ingresás manualmente. No representa una lectura automática de Google.
+        </p>
+      </article>
+    </section>
 
-  <div class="card">
-    <h2 id="thirtyDays">0</h2>
-    <p>Últimos 30 días</p>
-  </div>
+    <section class="card table-card">
+      <div class="table-head">
+        <div>
+          <h2 class="section-title">Últimas interacciones</h2>
+          <p class="subtitle">Las 20 lecturas más recientes registradas.</p>
+        </div>
+        <button class="secondary" id="refreshButton" type="button">↻ Actualizar ahora</button>
+      </div>
 
-</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Fecha y hora</th>
+              <th>Restaurante</th>
+              <th>Evento</th>
+            </tr>
+          </thead>
+          <tbody id="eventsBody">
+            <tr><td class="empty" colspan="4">Cargando datos...</td></tr>
+          </tbody>
+        </table>
+      </div>
 
-<div class="chart-container">
-  <canvas id="tapsChart"></canvas>
-</div>
+      <div class="table-footer">
+        <span id="eventCount">Preparando registros...</span>
+        <span id="lastUpdated">Última actualización: —</span>
+      </div>
+    </section>
 
-<div class="table-container">
+    <footer class="footer">TZURA STEAK HOUSE · NFC ANALYTICS</footer>
+  </main>
 
-  <h2>Últimos taps</h2>
+  <script>
+    // -------------------------------------------------------
+    // CONFIGURACIÓN: Supabase y nombre exacto del restaurante
+    // -------------------------------------------------------
+    const SUPABASE_URL = "https://qcvhxrudzjlgqlhvnkkl.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_OpfoWwYD2lvC9dVTT_UT8A_Bvz_GKRw";
 
-  <table>
+    const RESTAURANT = "Tzura Steak House";
+    const EVENTS_TABLE = "nfc_events";
+    const DAILY_TABLE = "veta_daily_review_totals";
 
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Hora</th>
-      </tr>
-    </thead>
-
-    <tbody id="tapTable"></tbody>
-
-  </table>
-
-</div>
-
-<script>
-
-const SUPABASE_URL =
-  "https://qcvhxrudzjlgqlhvnkkl.supabase.co";
-
-const SUPABASE_KEY =
-  "sb_publishable_OpfoWwYD2lvC9dVTT_UT8A_Bvz_GKRw";
-
-const RESTAURANT =
-  "Tzura Steak House";
-
-let tapsChart = null;
-
-
-// ==============================
-// CARGAR DATOS
-// ==============================
-
-async function loadData() {
-
-  const button = document.getElementById("updateButton");
-  const status = document.getElementById("status");
-
-  button.disabled = true;
-  button.textContent = "⏳ Actualizando...";
-  status.textContent = "Consultando datos...";
-
-  try {
-
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nfc_events?select=*&restaurant=eq.${encodeURIComponent(RESTAURANT)}&event=eq.nfc_tap&order=created_at.desc`,
-      {
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Authorization": `Bearer ${SUPABASE_KEY}`
-        }
-      }
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
     );
 
-    if (!response.ok) {
-      throw new Error("Error al consultar Supabase");
+    let activityChart = null;
+    let dailyRow = null;
+    let refreshInProgress = false;
+
+    // -------------------------------------------------------
+    // FECHAS: usar el día de Madrid, independientemente
+    // de la zona horaria del dispositivo
+    // -------------------------------------------------------
+    function madridDateKey(date = new Date()) {
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Europe/Madrid",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).formatToParts(date);
+
+      const values = {};
+      for (const part of parts) {
+        if (part.type !== "literal") values[part.type] = part.value;
+      }
+
+      return `${values.year}-${values.month}-${values.day}`;
     }
 
-    const data = await response.json();
-
-    if (!Array.isArray(data)) {
-      throw new Error("Los datos recibidos no son válidos");
+    function dateOffset(dateKey, days) {
+      const [year, month, day] = dateKey.split("-").map(Number);
+      const date = new Date(Date.UTC(year, month - 1, day + days));
+      return date.toISOString().slice(0, 10);
     }
 
-
-    // ==============================
-    // FECHAS
-    // ==============================
-
-    const now = new Date();
-
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(now.getDate() - 7);
-
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(now.getDate() - 30);
-
-
-    // ==============================
-    // CONTADORES
-    // ==============================
-
-    const today = data.filter(item => {
-
-      return new Date(item.created_at) >= todayStart;
-
-    }).length;
-
-
-    const sevenDays = data.filter(item => {
-
-      return new Date(item.created_at) >= sevenDaysAgo;
-
-    }).length;
-
-
-    const thirtyDays = data.filter(item => {
-
-      return new Date(item.created_at) >= thirtyDaysAgo;
-
-    }).length;
-
-
-    // ==============================
-    // MOSTRAR CONTADORES
-    // ==============================
-
-    document.getElementById("total").textContent =
-      data.length;
-
-    document.getElementById("today").textContent =
-      today;
-
-    document.getElementById("sevenDays").textContent =
-      sevenDays;
-
-    document.getElementById("thirtyDays").textContent =
-      thirtyDays;
-
-
-    // ==============================
-    // TABLA
-    // ==============================
-
-    const table = document.getElementById("tapTable");
-
-    table.innerHTML = "";
-
-    data.slice(0, 20).forEach(item => {
-
-      const date = new Date(item.created_at);
-
-      const row = document.createElement("tr");
-
-      row.innerHTML = `
-        <td>${date.toLocaleDateString("es-ES")}</td>
-        <td>${date.toLocaleTimeString("es-ES", {
-          hour: "2-digit",
-          minute: "2-digit"
-        })}</td>
-      `;
-
-      table.appendChild(row);
-
-    });
-
-
-    // ==============================
-    // GRÁFICO 30 DÍAS
-    // ==============================
-
-    const labels = [];
-    const values = [];
-
-    for (let i = 29; i >= 0; i--) {
-
-      const date = new Date();
-
-      date.setDate(date.getDate() - i);
-      date.setHours(0, 0, 0, 0);
-
-      const nextDay = new Date(date);
-
-      nextDay.setDate(nextDay.getDate() + 1);
-
-      const count = data.filter(item => {
-
-        const eventDate = new Date(item.created_at);
-
-        return eventDate >= date &&
-               eventDate < nextDay;
-
-      }).length;
-
-
-      labels.push(
-        date.toLocaleDateString("es-ES", {
-          day: "2-digit",
-          month: "2-digit"
-        })
-      );
-
-
-      values.push(count);
-
+    function formatMadridDate(date = new Date()) {
+      return new Intl.DateTimeFormat("es-ES", {
+        timeZone: "Europe/Madrid",
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      }).format(date);
     }
 
+    function formatMadridDateTime(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "Fecha no disponible";
 
-    // ==============================
-    // ELIMINAR GRÁFICO ANTERIOR
-    // ==============================
-
-    if (tapsChart) {
-      tapsChart.destroy();
+      return new Intl.DateTimeFormat("es-ES", {
+        timeZone: "Europe/Madrid",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      }).format(date);
     }
 
+    function showMessage(message, type = "info") {
+      const el = document.getElementById("globalMessage");
+      el.textContent = message;
+      el.className = `message show ${type}`;
+    }
 
-    // ==============================
-    // CREAR GRÁFICO
-    // ==============================
+    function clearMessage() {
+      const el = document.getElementById("globalMessage");
+      el.textContent = "";
+      el.className = "message";
+    }
 
-    tapsChart = new Chart(
-      document.getElementById("tapsChart"),
-      {
+    function setConnectionStatus(ok, label) {
+      document.getElementById("statusText").textContent = label;
+      document.getElementById("statusDot").classList.toggle("error", !ok);
+    }
 
+    function formatNumber(value) {
+      return Number(value || 0).toLocaleString("es-ES");
+    }
+
+    function readCountInput(id) {
+      const input = document.getElementById(id);
+      const raw = input.value.trim();
+
+      if (raw === "") {
+        throw new Error("Ingresá un número antes de guardar.");
+      }
+
+      const value = Number(raw);
+
+      if (!Number.isSafeInteger(value) || value < 0) {
+        throw new Error("El número de reseñas debe ser un entero igual o mayor que cero.");
+      }
+
+      return value;
+    }
+
+    // -------------------------------------------------------
+    // CARGAR LECTURAS NFC
+    // -------------------------------------------------------
+    async function fetchNfcEvents() {
+      const { data, error } = await supabaseClient
+        .from(EVENTS_TABLE)
+        .select("id, restaurant, event, created_at")
+        .eq("restaurant", RESTAURANT)
+        .eq("event", "nfc_tap")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw new Error(`No se pudieron cargar las lecturas NFC: ${error.message}`);
+      }
+
+      return data || [];
+    }
+
+    function renderStats(events) {
+      const today = madridDateKey();
+      const weekStart = dateOffset(today, -6);
+      const monthStart = dateOffset(today, -29);
+
+      const isToday = event => madridDateKey(new Date(event.created_at)) === today;
+      const isSince = (event, start) => {
+        const key = madridDateKey(new Date(event.created_at));
+        return key >= start && key <= today;
+      };
+
+      document.getElementById("totalTaps").textContent = formatNumber(events.length);
+      document.getElementById("todayTaps").textContent =
+        formatNumber(events.filter(isToday).length);
+      document.getElementById("weekTaps").textContent =
+        formatNumber(events.filter(event => isSince(event, weekStart)).length);
+      document.getElementById("monthTaps").textContent =
+        formatNumber(events.filter(event => isSince(event, monthStart)).length);
+    }
+
+    function renderChart(events) {
+      const today = madridDateKey();
+      const labels = [];
+      const values = [];
+
+      for (let i = 29; i >= 0; i--) {
+        const day = dateOffset(today, -i);
+        labels.push(day.slice(8, 10) + "/" + day.slice(5, 7));
+        values.push(0);
+      }
+
+      const indexByDay = new Map();
+      for (let i = 0; i < 30; i++) {
+        indexByDay.set(dateOffset(today, i - 29), i);
+      }
+
+      for (const event of events) {
+        const day = madridDateKey(new Date(event.created_at));
+        const index = indexByDay.get(day);
+        if (index !== undefined) values[index]++;
+      }
+
+      const ctx = document.getElementById("activityChart");
+
+      if (activityChart) activityChart.destroy();
+
+      activityChart = new Chart(ctx, {
         type: "line",
-
         data: {
-
-          labels: labels,
-
+          labels,
           datasets: [{
-
-            label: "Taps por día",
-
+            label: "Lecturas NFC",
             data: values,
-
-            tension: 0.3,
-
-            fill: false
-
+            borderColor: "#c39a68",
+            backgroundColor: "rgba(181, 138, 90, 0.14)",
+            borderWidth: 2,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 2,
+            pointHoverRadius: 5,
+            pointBackgroundColor: "#d9b783"
           }]
-
         },
-
         options: {
-
           responsive: true,
-
+          maintainAspectRatio: false,
+          interaction: { intersect: false, mode: "index" },
           plugins: {
-
             legend: {
-
               labels: {
-                color: "white"
+                color: "#b7a596",
+                usePointStyle: true,
+                boxWidth: 8
               }
-
-            }
-
-          },
-
-          scales: {
-
-            x: {
-
-              ticks: {
-                color: "#aaa"
-              }
-
             },
-
+            tooltip: { enabled: true }
+          },
+          scales: {
+            x: {
+              grid: { color: "rgba(181,138,90,0.08)" },
+              ticks: { color: "#a99b8c", maxTicksLimit: 10 }
+            },
             y: {
-
               beginAtZero: true,
-
-              ticks: {
-
-                color: "#aaa",
-
-                precision: 0
-
-              }
-
+              ticks: { precision: 0, color: "#a99b8c" },
+              grid: { color: "rgba(181,138,90,0.12)" }
             }
-
           }
+        }
+      });
+    }
 
+    function renderEventsTable(events) {
+      const tbody = document.getElementById("eventsBody");
+      const recent = events.slice(0, 20);
+
+      if (recent.length === 0) {
+        tbody.innerHTML = '<tr><td class="empty" colspan="4">Todavía no hay lecturas NFC registradas para Tzura.</td></tr>';
+        document.getElementById("eventCount").textContent = "0 interacciones encontradas";
+        return;
+      }
+
+      tbody.innerHTML = "";
+
+      // La lista viene de más reciente a más antigua.
+      // Por eso la más antigua de estas 20 será N.º 1
+      // y la más reciente será N.º 20.
+      recent.forEach((event, index) => {
+        const row = document.createElement("tr");
+
+        const number = document.createElement("td");
+        number.className = "event-number";
+        number.textContent = `N.º ${recent.length - index}`;
+
+        const date = document.createElement("td");
+        date.textContent = formatMadridDateTime(event.created_at);
+
+        const restaurant = document.createElement("td");
+        restaurant.textContent = event.restaurant || RESTAURANT;
+
+        const eventType = document.createElement("td");
+        const badge = document.createElement("span");
+        badge.className = "event-badge";
+        badge.textContent = "NFC tap";
+        eventType.appendChild(badge);
+
+        row.append(number, date, restaurant, eventType);
+        tbody.appendChild(row);
+      });
+
+      document.getElementById("eventCount").textContent =
+        `Mostrando ${recent.length} de ${formatNumber(events.length)} interacciones`;
+    }
+
+    // -------------------------------------------------------
+    // RESEÑAS DIARIAS
+    // La tabla existente se reutiliza, con restaurant/day
+    // como clave de cada registro.
+    // -------------------------------------------------------
+    async function loadDailyReviews() {
+      const today = madridDateKey();
+
+      const { data, error } = await supabaseClient
+        .from(DAILY_TABLE)
+        .select("id, restaurant, day, opening_count, closing_count")
+        .eq("restaurant", RESTAURANT)
+        .eq("day", today)
+        .maybeSingle();
+
+      if (error) {
+        throw new Error(`No se pudieron cargar las reseñas del día: ${error.message}`);
+      }
+
+      dailyRow = data || null;
+      renderDailyReviews();
+    }
+
+    function renderDailyReviews() {
+      const openingInput = document.getElementById("openingCount");
+      const closingInput = document.getElementById("closingCount");
+
+      if (dailyRow) {
+        openingInput.value = dailyRow.opening_count ?? "";
+        closingInput.value = dailyRow.closing_count ?? "";
+      } else {
+        openingInput.value = "";
+        closingInput.value = "";
+      }
+
+      const opening = dailyRow?.opening_count;
+      const closing = dailyRow?.closing_count;
+      const gainedEl = document.getElementById("reviewsGained");
+      const noteEl = document.getElementById("gainNote");
+
+      if (opening !== null && opening !== undefined &&
+          closing !== null && closing !== undefined) {
+        const difference = Number(closing) - Number(opening);
+        gainedEl.textContent = difference > 0 ? `+${formatNumber(difference)}` : formatNumber(difference);
+
+        if (difference > 0) {
+          noteEl.textContent = "El contador aumentó respecto a la apertura.";
+        } else if (difference === 0) {
+          noteEl.textContent = "El contador se mantuvo igual entre apertura y cierre.";
+        } else {
+          noteEl.textContent = "El contador de cierre es inferior al de apertura. Revisá los valores ingresados.";
+        }
+      } else {
+        gainedEl.textContent = "—";
+        noteEl.textContent = "Guardá los valores de apertura y cierre para calcular el resultado.";
+      }
+    }
+
+    async function saveDailyReview(which) {
+      const buttonId = which === "opening" ? "saveOpening" : "saveClosing";
+      const inputId = which === "opening" ? "openingCount" : "closingCount";
+      const button = document.getElementById(buttonId);
+      const originalText = button.textContent;
+
+      try {
+        clearMessage();
+
+        const value = readCountInput(inputId);
+        button.disabled = true;
+        button.textContent = "Guardando...";
+
+        // Volver a consultar el registro antes de guardar para
+        // conservar el otro valor (apertura o cierre).
+        const today = madridDateKey();
+
+        const { data: current, error: readError } = await supabaseClient
+          .from(DAILY_TABLE)
+          .select("id, restaurant, day, opening_count, closing_count")
+          .eq("restaurant", RESTAURANT)
+          .eq("day", today)
+          .maybeSingle();
+
+        if (readError) {
+          throw new Error(`No se pudo consultar el registro diario: ${readError.message}`);
         }
 
+        const opening = which === "opening"
+          ? value
+          : (current?.opening_count ?? null);
+
+        const closing = which === "closing"
+          ? value
+          : (current?.closing_count ?? null);
+
+        const payload = {
+          restaurant: RESTAURANT,
+          day: today,
+          opening_count: opening,
+          closing_count: closing,
+          updated_at: new Date().toISOString()
+        };
+
+        const { data, error } = await supabaseClient
+          .from(DAILY_TABLE)
+          .upsert(payload, { onConflict: "restaurant,day" })
+          .select("id, restaurant, day, opening_count, closing_count")
+          .single();
+
+        if (error) {
+          throw new Error(`Supabase no pudo guardar el dato: ${error.message}`);
+        }
+
+        dailyRow = data;
+        renderDailyReviews();
+        showMessage(
+          which === "opening"
+            ? "Apertura guardada correctamente."
+            : "Cierre guardado correctamente.",
+          "success"
+        );
+      } catch (error) {
+        console.error("Error guardando reseñas:", error);
+        showMessage(error.message || "No se pudo guardar el dato.", "error");
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
       }
-    );
+    }
 
+    // -------------------------------------------------------
+    // ACTUALIZAR PANEL
+    // -------------------------------------------------------
+    async function loadDashboard() {
+      if (refreshInProgress) return;
+      refreshInProgress = true;
 
-    // ==============================
-    // HORA DE ACTUALIZACIÓN
-    // ==============================
+      try {
+        const events = await fetchNfcEvents();
 
-    const hora = new Date().toLocaleTimeString("es-ES", {
+        renderStats(events);
+        renderChart(events);
+        renderEventsTable(events);
 
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
+        await loadDailyReviews();
 
+        document.getElementById("todayDate").textContent = formatMadridDate();
+        document.getElementById("lastUpdated").textContent =
+          "Última actualización: " +
+          new Intl.DateTimeFormat("es-ES", {
+            timeZone: "Europe/Madrid",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+          }).format(new Date());
+
+        setConnectionStatus(true, "Conectado");
+        clearMessage();
+      } catch (error) {
+        console.error("Error actualizando dashboard:", error);
+        setConnectionStatus(false, "Error de conexión");
+        showMessage(error.message || "No se pudieron actualizar los datos.", "error");
+      } finally {
+        refreshInProgress = false;
+      }
+    }
+
+    document.getElementById("saveOpening").addEventListener("click", () => {
+      saveDailyReview("opening");
     });
 
+    document.getElementById("saveClosing").addEventListener("click", () => {
+      saveDailyReview("closing");
+    });
 
-    status.textContent =
-      `Última actualización: ${hora} · Se actualiza automáticamente cada 30 segundos`;
+    document.getElementById("refreshButton").addEventListener("click", loadDashboard);
 
-  }
-
-  catch (error) {
-
-    console.error(error);
-
-    status.textContent =
-      "❌ No se pudieron actualizar los datos.";
-
-  }
-
-  finally {
-
-    button.disabled = false;
-
-    button.textContent =
-      "🔄 Actualizar datos";
-
-  }
-
-}
-
-
-// ==============================
-// CARGAR AL ABRIR
-// ==============================
-
-loadData();
-
-
-// ==============================
-// ACTUALIZAR CADA 30 SEGUNDOS
-// ==============================
-
-setInterval(() => {
-
-  loadData();
-
-}, 30000);
-
-</script>
-
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("todayDate").textContent = formatMadridDate();
+      loadDashboard();
+      setInterval(loadDashboard, 30000);
+    });
+  </script>
 </body>
 </html>
