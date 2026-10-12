@@ -428,19 +428,19 @@
         <div class="stat-foot">Desde el inicio del registro</div>
       </article>
       <article class="card">
-        <div class="stat-label">Lecturas de hoy</div>
+        <div class="stat-label">Lecturas NFC de hoy</div>
         <div class="stat-value" id="todayTaps">—</div>
         <div class="stat-foot">Día actual · hora de Madrid</div>
       </article>
       <article class="card">
-        <div class="stat-label">Últimos 7 días</div>
-        <div class="stat-value" id="weekTaps">—</div>
-        <div class="stat-foot">Incluye el día de hoy</div>
+        <div class="stat-label">Total de escaneos QR</div>
+        <div class="stat-value" id="totalQr">—</div>
+        <div class="stat-foot">Desde el inicio del registro</div>
       </article>
       <article class="card">
-        <div class="stat-label">Últimos 30 días</div>
-        <div class="stat-value" id="monthTaps">—</div>
-        <div class="stat-foot">Incluye el día de hoy</div>
+        <div class="stat-label">Escaneos QR de hoy</div>
+        <div class="stat-value" id="todayQr">—</div>
+        <div class="stat-foot">Día actual · hora de Madrid</div>
       </article>
     </section>
 
@@ -490,7 +490,7 @@
       <div class="table-head">
         <div>
           <h2 class="section-title">Últimas interacciones</h2>
-          <p class="subtitle">Las 20 lecturas más recientes registradas.</p>
+          <p class="subtitle">Las 20 interacciones NFC y QR más recientes registradas.</p>
         </div>
         <button class="secondary" id="refreshButton" type="button">↻ Actualizar ahora</button>
       </div>
@@ -517,7 +517,7 @@
       </div>
     </section>
 
-    <footer class="footer">TZURA STEAK HOUSE · NFC ANALYTICS</footer>
+    <footer class="footer">TZURA STEAK HOUSE · NFC + QR ANALYTICS</footer>
   </main>
 
   <script>
@@ -631,16 +631,16 @@
     // -------------------------------------------------------
     // CARGAR LECTURAS NFC
     // -------------------------------------------------------
-    async function fetchNfcEvents() {
+    async function fetchTrackedEvents() {
       const { data, error } = await supabaseClient
         .from(EVENTS_TABLE)
         .select("id, restaurant, event, created_at")
         .eq("restaurant", RESTAURANT)
-        .eq("event", "nfc_tap")
+        .in("event", ["nfc_tap", "qr_scan"])
         .order("created_at", { ascending: false });
 
       if (error) {
-        throw new Error(`No se pudieron cargar las lecturas NFC: ${error.message}`);
+        throw new Error(`No se pudieron cargar las interacciones NFC/QR: ${error.message}`);
       }
 
       return data || [];
@@ -648,22 +648,14 @@
 
     function renderStats(events) {
       const today = madridDateKey();
-      const weekStart = dateOffset(today, -6);
-      const monthStart = dateOffset(today, -29);
-
+      const nfc = events.filter(event => event.event === "nfc_tap");
+      const qr = events.filter(event => event.event === "qr_scan");
       const isToday = event => madridDateKey(new Date(event.created_at)) === today;
-      const isSince = (event, start) => {
-        const key = madridDateKey(new Date(event.created_at));
-        return key >= start && key <= today;
-      };
 
-      document.getElementById("totalTaps").textContent = formatNumber(events.length);
-      document.getElementById("todayTaps").textContent =
-        formatNumber(events.filter(isToday).length);
-      document.getElementById("weekTaps").textContent =
-        formatNumber(events.filter(event => isSince(event, weekStart)).length);
-      document.getElementById("monthTaps").textContent =
-        formatNumber(events.filter(event => isSince(event, monthStart)).length);
+      document.getElementById("totalTaps").textContent = formatNumber(nfc.length);
+      document.getElementById("todayTaps").textContent = formatNumber(nfc.filter(isToday).length);
+      document.getElementById("totalQr").textContent = formatNumber(qr.length);
+      document.getElementById("todayQr").textContent = formatNumber(qr.filter(isToday).length);
     }
 
     function renderChart(events) {
@@ -743,7 +735,7 @@
       const recent = events.slice(0, 20);
 
       if (recent.length === 0) {
-        tbody.innerHTML = '<tr><td class="empty" colspan="4">Todavía no hay lecturas NFC registradas para Tzura.</td></tr>';
+        tbody.innerHTML = '<tr><td class="empty" colspan="4">Todavía no hay interacciones NFC o QR registradas para Tzura.</td></tr>';
         document.getElementById("eventCount").textContent = "0 interacciones encontradas";
         return;
       }
@@ -769,7 +761,7 @@
         const eventType = document.createElement("td");
         const badge = document.createElement("span");
         badge.className = "event-badge";
-        badge.textContent = "NFC tap";
+        badge.textContent = event.event === "qr_scan" ? "QR scan" : "NFC tap";
         eventType.appendChild(badge);
 
         row.append(number, date, restaurant, eventType);
@@ -917,7 +909,7 @@
       refreshInProgress = true;
 
       try {
-        const events = await fetchNfcEvents();
+        const events = await fetchTrackedEvents();
 
         renderStats(events);
         renderChart(events);
