@@ -674,7 +674,7 @@
         indexByDay.set(dateOffset(today, i - 29), i);
       }
 
-      for (const event of events) {
+      for (const event of events.filter(item => item.event === "nfc_tap")) {
         const day = madridDateKey(new Date(event.created_at));
         const index = indexByDay.get(day);
         if (index !== undefined) values[index]++;
