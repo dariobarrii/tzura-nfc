@@ -1,46 +1,145 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b0908">
-  <title>Tzura Steak House · Reseñas</title>
+  <title>Tzura Steak House | Reseñas</title>
+
   <style>
-    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0908;color:#f5eee5;font-family:Arial,sans-serif;text-align:center}
-    main{padding:28px;max-width:420px}
-    .mark{font-family:Georgia,serif;color:#d9b783;font-size:54px;margin-bottom:14px}
-    h1{font-family:Georgia,serif;font-size:28px;font-weight:500}
-    p{color:#a99b8c;line-height:1.6}
-    .spinner{width:24px;height:24px;border:2px solid #38281c;border-top-color:#d9b783;border-radius:50%;margin:24px auto;animation:spin .8s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(ellipse at top, #291b10 0, transparent 55%),
+        #0b0908;
+      color: #f5eee5;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    main {
+      padding: 28px;
+      max-width: 420px;
+    }
+
+    .mark {
+      font-family: Georgia, serif;
+      color: #d9b783;
+      font-size: 58px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-family: Georgia, serif;
+      font-size: 30px;
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+
+    p {
+      color: #a99b8c;
+      line-height: 1.7;
+    }
+
+    .spinner {
+      width: 27px;
+      height: 27px;
+      border: 2px solid #38281c;
+      border-top-color: #d9b783;
+      border-radius: 50%;
+      margin: 25px auto;
+      animation: spin .8s linear infinite;
+    }
+
+    a {
+      color: #d9b783;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
+
 <body>
   <main>
     <div class="mark">T</div>
+
     <h1>Tzura Steak House</h1>
-    <p>Abriendo las reseñas de Google…</p>
+
+    <p>Gracias por visitarnos.</p>
+    <p>Estamos abriendo las reseñas de Google…</p>
+
     <div class="spinner" aria-hidden="true"></div>
-    <p>Si no se abre automáticamente, <a id="manualLink" href="https://search.google.com/local/writereview?placeid=ChIJJViIJlyjpBIRjPgkrfFNLKU" style="color:#d9b783">tocá aquí</a>.</p>
+
+    <p>
+      Si no se abre automáticamente,
+      <a id="manualLink"
+         href="https://search.google.com/local/writereview?placeid=ChIJJViIJlyjpBIRjPgkrfFNLKU">
+        tocá aquí
+      </a>.
+    </p>
   </main>
+
   <script>
-    const SUPABASE_URL = "https://qcvhxrudzjlgqlhvnkkl.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_OpfoWwYD2lvC9dVTT_UT8A_Bvz_GKRw";
+    // CONFIGURACIÓN SUPABASE
+    const SUPABASE_URL =
+      "https://qcvhxrudzjlgqlhvnkkl.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_OpfoWwYD2lvC9dVTT_UT8A_Bvz_GKRw";
+
     const RESTAURANT = "Tzura Steak House";
-    const GOOGLE_REVIEW_URL = "https://search.google.com/local/writereview?placeid=ChIJJViIJlyjpBIRjPgkrfFNLKU";
-    document.getElementById("manualLink").href = GOOGLE_REVIEW_URL;
-    fetch(SUPABASE_URL + "/rest/v1/nfc_events", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_KEY,
-        "Authorization": "Bearer " + SUPABASE_KEY,
-        "Prefer": "return=minimal"
-      },
-      body: JSON.stringify({ restaurant: RESTAURANT, event: "qr_scan" }),
-      keepalive: true
-    }).catch(error => console.error("No se pudo registrar el escaneo QR:", error))
-      .finally(() => { window.location.replace(GOOGLE_REVIEW_URL); });
+
+    // ENLACE DIRECTO A LAS RESEÑAS DE GOOGLE
+    const GOOGLE_REVIEW_URL =
+      "https://search.google.com/local/writereview?placeid=ChIJJViIJlyjpBIRjPgkrfFNLKU";
+
+    document.getElementById("manualLink").href =
+      GOOGLE_REVIEW_URL;
+
+    async function registerQrScan() {
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/nfc_events`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`,
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify({
+            restaurant: RESTAURANT,
+            event: "qr_scan"
+          }),
+          keepalive: true
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Error registrando el QR: ${response.status}`
+        );
+      }
+    }
+
+    // Registrar el escaneo y redirigir aunque falle el registro.
+    registerQrScan()
+      .catch(error => {
+        console.error(error);
+      })
+      .finally(() => {
+        window.location.replace(GOOGLE_REVIEW_URL);
+      });
   </script>
 </body>
 </html>
