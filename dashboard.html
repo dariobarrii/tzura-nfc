@@ -1,11 +1,11 @@
-
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tzura Steak House | Dashboard NFC + QR</title>
   <meta name="theme-color" content="#0b0908">
+  <title>Tzura Steak House | Dashboard NFC + QR</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,12 +31,12 @@
 
     body {
       margin: 0;
+      min-height: 100vh;
       background:
         radial-gradient(ellipse at top right, #291b10 0, transparent 38%),
         var(--bg);
       color: var(--text);
       font-family: "DM Sans", sans-serif;
-      min-height: 100vh;
     }
 
     .container {
@@ -406,7 +406,7 @@
         <div class="brand-mark">T</div>
         <div>
           <h1>Tzura Steak House</h1>
-          <p class="subtitle">NFC Reviews · Panel de control</p>
+          <p class="subtitle">NFC + QR · Panel de control</p>
         </div>
       </div>
 
@@ -418,50 +418,93 @@
 
     <div id="globalMessage" class="message" role="status" aria-live="polite"></div>
 
-    <h2 class="section-title">Resumen de actividad</h2>
-    <p class="section-subtitle">
-      Lecturas registradas por las tarjetas NFC y los códigos QR de Tzura Steak House.
-    </p>
-
+    <h2 class="section-title">Seguimiento NFC</h2>
     <section class="stats">
       <article class="card">
-        <div class="stat-label">Total de lecturas NFC</div>
-        <div class="stat-value" id="totalTaps">—</div>
-        <div class="stat-foot">Desde el inicio del registro</div>
+        <div class="stat-label">NFC · Hoy</div>
+        <div class="stat-value" id="nfcToday">—</div>
+        <div class="stat-foot">Lecturas registradas hoy</div>
       </article>
-
       <article class="card">
-        <div class="stat-label">Lecturas NFC de hoy</div>
-        <div class="stat-value" id="todayTaps">—</div>
-        <div class="stat-foot">Día actual · hora de Madrid</div>
+        <div class="stat-label">NFC · Últimos 7 días</div>
+        <div class="stat-value" id="nfc7">—</div>
+        <div class="stat-foot">Actividad semanal</div>
       </article>
-
       <article class="card">
-        <div class="stat-label">Total de escaneos QR</div>
-        <div class="stat-value" id="totalQr">—</div>
-        <div class="stat-foot">Desde el inicio del registro</div>
+        <div class="stat-label">NFC · Últimos 30 días</div>
+        <div class="stat-value" id="nfc30">—</div>
+        <div class="stat-foot">Actividad mensual</div>
       </article>
-
       <article class="card">
-        <div class="stat-label">Escaneos QR de hoy</div>
-        <div class="stat-value" id="todayQr">—</div>
-        <div class="stat-foot">Día actual · hora de Madrid</div>
+        <div class="stat-label">NFC · Total histórico</div>
+        <div class="stat-value" id="nfcTotal">—</div>
+        <div class="stat-foot">Total de lecturas NFC</div>
+      </article>
+    </section>
+
+    <h2 class="section-title">Seguimiento QR</h2>
+    <section class="stats">
+      <article class="card">
+        <div class="stat-label">QR · Hoy</div>
+        <div class="stat-value" id="qrToday">—</div>
+        <div class="stat-foot">Escaneos registrados hoy</div>
+      </article>
+      <article class="card">
+        <div class="stat-label">QR · Últimos 7 días</div>
+        <div class="stat-value" id="qr7">—</div>
+        <div class="stat-foot">Actividad semanal</div>
+      </article>
+      <article class="card">
+        <div class="stat-label">QR · Últimos 30 días</div>
+        <div class="stat-value" id="qr30">—</div>
+        <div class="stat-foot">Actividad mensual</div>
+      </article>
+      <article class="card">
+        <div class="stat-label">QR · Total histórico</div>
+        <div class="stat-value" id="qrTotal">—</div>
+        <div class="stat-foot">Total de escaneos QR</div>
+      </article>
+    </section>
+
+    <h2 class="section-title">Total combinado</h2>
+    <section class="stats">
+      <article class="card">
+        <div class="stat-label">Interacciones de hoy</div>
+        <div class="stat-value" id="allToday">—</div>
+        <div class="stat-foot">QR + NFC</div>
+      </article>
+      <article class="card">
+        <div class="stat-label">Interacciones últimos 7 días</div>
+        <div class="stat-value" id="all7">—</div>
+        <div class="stat-foot">QR + NFC</div>
+      </article>
+      <article class="card">
+        <div class="stat-label">Interacciones últimos 30 días</div>
+        <div class="stat-value" id="all30">—</div>
+        <div class="stat-foot">QR + NFC</div>
+      </article>
+      <article class="card">
+        <div class="stat-label">Total histórico combinado</div>
+        <div class="stat-value" id="allTotal">—</div>
+        <div class="stat-foot">QR + NFC</div>
       </article>
     </section>
 
     <section class="layout">
       <article class="card">
-        <h2 class="section-title">Actividad NFC</h2>
-        <p class="section-subtitle">Lecturas por día durante los últimos 30 días.</p>
+        <h2 class="section-title">Actividad NFC + QR</h2>
+        <p class="section-subtitle">
+          Comparación diaria de lecturas NFC y escaneos QR durante los últimos 30 días.
+        </p>
         <div class="chart-wrap">
-          <canvas id="activityChart" aria-label="Gráfico de lecturas NFC"></canvas>
+          <canvas id="activityChart" aria-label="Gráfico de lecturas NFC y escaneos QR"></canvas>
         </div>
       </article>
 
       <article class="card daily-card">
         <h2 class="section-title">Control diario de reseñas</h2>
         <p class="section-subtitle">
-          Anotá el contador visible en Google al abrir y al cerrar el restaurante.
+          Anotá el contador visible en Google al comenzar y terminar el día.
         </p>
 
         <div class="date-label" id="todayDate">Fecha de hoy</div>
@@ -491,7 +534,7 @@
         </div>
 
         <p class="gain-note" style="margin-bottom:0">
-          El cálculo compara los valores que ingresás manualmente. No es una lectura automática de Google.
+          El cálculo compara los valores ingresados manualmente. No es una lectura automática de Google.
         </p>
       </article>
     </section>
@@ -531,9 +574,7 @@
   </main>
 
   <script>
-    // =======================================================
     // CONFIGURACIÓN
-    // =======================================================
     const SUPABASE_URL = "https://qcvhxrudzjlgqlhvnkkl.supabase.co";
     const SUPABASE_KEY = "sb_publishable_OpfoWwYD2lvC9dVTT_UT8A_Bvz_GKRw";
 
@@ -550,9 +591,7 @@
     let dailyRow = null;
     let refreshInProgress = false;
 
-    // =======================================================
-    // FECHAS: zona horaria de Madrid
-    // =======================================================
+    // FECHAS EN LA ZONA HORARIA DE MADRID
     function madridDateKey(date = new Date()) {
       const parts = new Intl.DateTimeFormat("en-CA", {
         timeZone: "Europe/Madrid",
@@ -636,9 +675,7 @@
       return value;
     }
 
-    // =======================================================
     // CARGAR EVENTOS NFC Y QR
-    // =======================================================
     async function fetchTrackedEvents() {
       const { data, error } = await supabaseClient
         .from(EVENTS_TABLE)
@@ -654,75 +691,112 @@
       return data || [];
     }
 
+    // CONTADORES: NFC, QR Y TOTAL COMBINADO
     function renderStats(events) {
       const today = madridDateKey();
+      const start7 = dateOffset(today, -6);
+      const start30 = dateOffset(today, -29);
 
       const nfcEvents = events.filter(item => item.event === "nfc_tap");
       const qrEvents = events.filter(item => item.event === "qr_scan");
 
-      const isToday = event =>
-        madridDateKey(new Date(event.created_at)) === today;
+      const eventDay = event => madridDateKey(new Date(event.created_at));
 
-      document.getElementById("totalTaps").textContent =
-        formatNumber(nfcEvents.length);
+      const countPeriod = (list, startDate) =>
+        list.filter(event => {
+          const day = eventDay(event);
+          return day >= startDate && day <= today;
+        }).length;
 
-      document.getElementById("todayTaps").textContent =
-        formatNumber(nfcEvents.filter(isToday).length);
+      const nfcToday = countPeriod(nfcEvents, today);
+      const nfc7 = countPeriod(nfcEvents, start7);
+      const nfc30 = countPeriod(nfcEvents, start30);
 
-      document.getElementById("totalQr").textContent =
-        formatNumber(qrEvents.length);
+      const qrToday = countPeriod(qrEvents, today);
+      const qr7 = countPeriod(qrEvents, start7);
+      const qr30 = countPeriod(qrEvents, start30);
 
-      document.getElementById("todayQr").textContent =
-        formatNumber(qrEvents.filter(isToday).length);
+      const set = (id, value) => {
+        document.getElementById(id).textContent = formatNumber(value);
+      };
+
+      set("nfcToday", nfcToday);
+      set("nfc7", nfc7);
+      set("nfc30", nfc30);
+      set("nfcTotal", nfcEvents.length);
+
+      set("qrToday", qrToday);
+      set("qr7", qr7);
+      set("qr30", qr30);
+      set("qrTotal", qrEvents.length);
+
+      set("allToday", nfcToday + qrToday);
+      set("all7", nfc7 + qr7);
+      set("all30", nfc30 + qr30);
+      set("allTotal", nfcEvents.length + qrEvents.length);
     }
 
-    // =======================================================
-    // GRÁFICO DE ACTIVIDAD NFC (NO INCLUYE QR)
-    // =======================================================
+    // GRÁFICO CON DOS LÍNEAS: NFC Y QR
     function renderChart(events) {
       const today = madridDateKey();
       const labels = [];
-      const values = [];
+      const nfcValues = [];
+      const qrValues = [];
+      const indexByDay = new Map();
 
       for (let i = 29; i >= 0; i--) {
         const day = dateOffset(today, -i);
+        const index = 29 - i;
+
         labels.push(day.slice(8, 10) + "/" + day.slice(5, 7));
-        values.push(0);
+        nfcValues.push(0);
+        qrValues.push(0);
+        indexByDay.set(day, index);
       }
 
-      const indexByDay = new Map();
-
-      for (let i = 0; i < 30; i++) {
-        indexByDay.set(dateOffset(today, i - 29), i);
-      }
-
-      for (const event of events.filter(item => item.event === "nfc_tap")) {
+      for (const event of events) {
         const day = madridDateKey(new Date(event.created_at));
         const index = indexByDay.get(day);
 
-        if (index !== undefined) values[index]++;
+        if (index === undefined) continue;
+
+        if (event.event === "nfc_tap") nfcValues[index]++;
+        if (event.event === "qr_scan") qrValues[index]++;
       }
 
       const ctx = document.getElementById("activityChart");
-
       if (activityChart) activityChart.destroy();
 
       activityChart = new Chart(ctx, {
         type: "line",
         data: {
           labels,
-          datasets: [{
-            label: "Lecturas NFC",
-            data: values,
-            borderColor: "#c39a68",
-            backgroundColor: "rgba(181, 138, 90, 0.14)",
-            borderWidth: 2,
-            fill: true,
-            tension: 0.35,
-            pointRadius: 2,
-            pointHoverRadius: 5,
-            pointBackgroundColor: "#d9b783"
-          }]
+          datasets: [
+            {
+              label: "Lecturas NFC",
+              data: nfcValues,
+              borderColor: "#c39a68",
+              backgroundColor: "rgba(181, 138, 90, 0.12)",
+              borderWidth: 2,
+              fill: false,
+              tension: 0.35,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              pointBackgroundColor: "#d9b783"
+            },
+            {
+              label: "Escaneos QR",
+              data: qrValues,
+              borderColor: "#91c7a0",
+              backgroundColor: "rgba(145, 199, 160, 0.10)",
+              borderWidth: 2,
+              fill: false,
+              tension: 0.35,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              pointBackgroundColor: "#91c7a0"
+            }
+          ]
         },
         options: {
           responsive: true,
@@ -752,9 +826,7 @@
       });
     }
 
-    // =======================================================
     // TABLA DE ÚLTIMAS INTERACCIONES
-    // =======================================================
     function renderEventsTable(events) {
       const tbody = document.getElementById("eventsBody");
       const recent = events.slice(0, 20);
@@ -763,8 +835,7 @@
         tbody.innerHTML =
           '<tr><td class="empty" colspan="4">Todavía no hay interacciones NFC o QR registradas para Tzura.</td></tr>';
 
-        document.getElementById("eventCount").textContent =
-          "0 interacciones encontradas";
+        document.getElementById("eventCount").textContent = "0 interacciones encontradas";
         return;
       }
 
@@ -797,9 +868,7 @@
         `Mostrando ${recent.length} de ${formatNumber(events.length)} interacciones`;
     }
 
-    // =======================================================
-    // CONTROL MANUAL DE RESEÑAS
-    // =======================================================
+    // CONTROL MANUAL DE RESEÑAS DE GOOGLE
     async function loadDailyReviews() {
       const today = madridDateKey();
 
@@ -819,11 +888,8 @@
     }
 
     function renderDailyReviews() {
-      document.getElementById("openingCount").value =
-        dailyRow?.opening_count ?? "";
-
-      document.getElementById("closingCount").value =
-        dailyRow?.closing_count ?? "";
+      document.getElementById("openingCount").value = dailyRow?.opening_count ?? "";
+      document.getElementById("closingCount").value = dailyRow?.closing_count ?? "";
 
       const opening = dailyRow?.opening_count;
       const closing = dailyRow?.closing_count;
@@ -860,7 +926,6 @@
 
       try {
         clearMessage();
-
         const value = readCountInput(inputId);
         button.disabled = true;
         button.textContent = "Guardando...";
@@ -922,12 +987,9 @@
       }
     }
 
-    // =======================================================
     // ACTUALIZAR DASHBOARD
-    // =======================================================
     async function loadDashboard() {
       if (refreshInProgress) return;
-
       refreshInProgress = true;
 
       try {
@@ -936,7 +998,6 @@
         renderStats(events);
         renderChart(events);
         renderEventsTable(events);
-
         await loadDailyReviews();
 
         document.getElementById("todayDate").textContent = formatMadridDate();
@@ -956,10 +1017,7 @@
       } catch (error) {
         console.error("Error actualizando dashboard:", error);
         setConnectionStatus(false, "Error de conexión");
-        showMessage(
-          error.message || "No se pudieron actualizar los datos.",
-          "error"
-        );
+        showMessage(error.message || "No se pudieron actualizar los datos.", "error");
       } finally {
         refreshInProgress = false;
       }
@@ -983,3 +1041,4 @@
   </script>
 </body>
 </html>
+```
