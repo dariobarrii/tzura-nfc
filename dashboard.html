@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tzura Steak House | Dashboard NFC</title>
+  <title>Tzura Steak House | Dashboard NFC + QR</title>
   <meta name="theme-color" content="#0b0908">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +17,6 @@
     :root {
       --bg: #0b0908;
       --panel: #15110e;
-      --panel2: #1c1611;
       --border: #38281c;
       --gold: #b58a5a;
       --gold-light: #d9b783;
@@ -410,6 +409,7 @@
           <p class="subtitle">NFC Reviews · Panel de control</p>
         </div>
       </div>
+
       <div class="status">
         <span class="dot" id="statusDot"></span>
         <span id="statusText">Conectando con Supabase...</span>
@@ -419,7 +419,9 @@
     <div id="globalMessage" class="message" role="status" aria-live="polite"></div>
 
     <h2 class="section-title">Resumen de actividad</h2>
-    <p class="section-subtitle">Lecturas registradas por las tarjetas NFC de Tzura Steak House.</p>
+    <p class="section-subtitle">
+      Lecturas registradas por las tarjetas NFC y los códigos QR de Tzura Steak House.
+    </p>
 
     <section class="stats">
       <article class="card">
@@ -427,16 +429,19 @@
         <div class="stat-value" id="totalTaps">—</div>
         <div class="stat-foot">Desde el inicio del registro</div>
       </article>
+
       <article class="card">
         <div class="stat-label">Lecturas NFC de hoy</div>
         <div class="stat-value" id="todayTaps">—</div>
         <div class="stat-foot">Día actual · hora de Madrid</div>
       </article>
+
       <article class="card">
         <div class="stat-label">Total de escaneos QR</div>
         <div class="stat-value" id="totalQr">—</div>
         <div class="stat-foot">Desde el inicio del registro</div>
       </article>
+
       <article class="card">
         <div class="stat-label">Escaneos QR de hoy</div>
         <div class="stat-value" id="todayQr">—</div>
@@ -455,7 +460,10 @@
 
       <article class="card daily-card">
         <h2 class="section-title">Control diario de reseñas</h2>
-        <p class="section-subtitle">Anotá el contador visible en Google al abrir y al cerrar el restaurante.</p>
+        <p class="section-subtitle">
+          Anotá el contador visible en Google al abrir y al cerrar el restaurante.
+        </p>
+
         <div class="date-label" id="todayDate">Fecha de hoy</div>
 
         <div class="save-row">
@@ -477,11 +485,13 @@
         <div class="gain-box">
           <div class="gain-label">Reseñas ganadas hoy</div>
           <div class="gain-value" id="reviewsGained">—</div>
-          <div class="gain-note" id="gainNote">Guardá los valores de apertura y cierre para calcular el resultado.</div>
+          <div class="gain-note" id="gainNote">
+            Guardá los valores de apertura y cierre para calcular el resultado.
+          </div>
         </div>
 
         <p class="gain-note" style="margin-bottom:0">
-          Este cálculo compara los valores que ingresás manualmente. No representa una lectura automática de Google.
+          El cálculo compara los valores que ingresás manualmente. No es una lectura automática de Google.
         </p>
       </article>
     </section>
@@ -521,9 +531,9 @@
   </main>
 
   <script>
-    // -------------------------------------------------------
-    // CONFIGURACIÓN: Supabase y nombre exacto del restaurante
-    // -------------------------------------------------------
+    // =======================================================
+    // CONFIGURACIÓN
+    // =======================================================
     const SUPABASE_URL = "https://qcvhxrudzjlgqlhvnkkl.supabase.co";
     const SUPABASE_KEY = "sb_publishable_OpfoWwYD2lvC9dVTT_UT8A_Bvz_GKRw";
 
@@ -540,10 +550,9 @@
     let dailyRow = null;
     let refreshInProgress = false;
 
-    // -------------------------------------------------------
-    // FECHAS: usar el día de Madrid, independientemente
-    // de la zona horaria del dispositivo
-    // -------------------------------------------------------
+    // =======================================================
+    // FECHAS: zona horaria de Madrid
+    // =======================================================
     function madridDateKey(date = new Date()) {
       const parts = new Intl.DateTimeFormat("en-CA", {
         timeZone: "Europe/Madrid",
@@ -590,6 +599,10 @@
       }).format(date);
     }
 
+    function formatNumber(value) {
+      return Number(value || 0).toLocaleString("es-ES");
+    }
+
     function showMessage(message, type = "info") {
       const el = document.getElementById("globalMessage");
       el.textContent = message;
@@ -607,13 +620,8 @@
       document.getElementById("statusDot").classList.toggle("error", !ok);
     }
 
-    function formatNumber(value) {
-      return Number(value || 0).toLocaleString("es-ES");
-    }
-
     function readCountInput(id) {
-      const input = document.getElementById(id);
-      const raw = input.value.trim();
+      const raw = document.getElementById(id).value.trim();
 
       if (raw === "") {
         throw new Error("Ingresá un número antes de guardar.");
@@ -628,9 +636,9 @@
       return value;
     }
 
-    // -------------------------------------------------------
-    // CARGAR LECTURAS NFC
-    // -------------------------------------------------------
+    // =======================================================
+    // CARGAR EVENTOS NFC Y QR
+    // =======================================================
     async function fetchTrackedEvents() {
       const { data, error } = await supabaseClient
         .from(EVENTS_TABLE)
@@ -648,16 +656,29 @@
 
     function renderStats(events) {
       const today = madridDateKey();
-      const nfc = events.filter(event => event.event === "nfc_tap");
-      const qr = events.filter(event => event.event === "qr_scan");
-      const isToday = event => madridDateKey(new Date(event.created_at)) === today;
 
-      document.getElementById("totalTaps").textContent = formatNumber(nfc.length);
-      document.getElementById("todayTaps").textContent = formatNumber(nfc.filter(isToday).length);
-      document.getElementById("totalQr").textContent = formatNumber(qr.length);
-      document.getElementById("todayQr").textContent = formatNumber(qr.filter(isToday).length);
+      const nfcEvents = events.filter(item => item.event === "nfc_tap");
+      const qrEvents = events.filter(item => item.event === "qr_scan");
+
+      const isToday = event =>
+        madridDateKey(new Date(event.created_at)) === today;
+
+      document.getElementById("totalTaps").textContent =
+        formatNumber(nfcEvents.length);
+
+      document.getElementById("todayTaps").textContent =
+        formatNumber(nfcEvents.filter(isToday).length);
+
+      document.getElementById("totalQr").textContent =
+        formatNumber(qrEvents.length);
+
+      document.getElementById("todayQr").textContent =
+        formatNumber(qrEvents.filter(isToday).length);
     }
 
+    // =======================================================
+    // GRÁFICO DE ACTIVIDAD NFC (NO INCLUYE QR)
+    // =======================================================
     function renderChart(events) {
       const today = madridDateKey();
       const labels = [];
@@ -670,6 +691,7 @@
       }
 
       const indexByDay = new Map();
+
       for (let i = 0; i < 30; i++) {
         indexByDay.set(dateOffset(today, i - 29), i);
       }
@@ -677,6 +699,7 @@
       for (const event of events.filter(item => item.event === "nfc_tap")) {
         const day = madridDateKey(new Date(event.created_at));
         const index = indexByDay.get(day);
+
         if (index !== undefined) values[index]++;
       }
 
@@ -712,8 +735,7 @@
                 usePointStyle: true,
                 boxWidth: 8
               }
-            },
-            tooltip: { enabled: true }
+            }
           },
           scales: {
             x: {
@@ -730,21 +752,24 @@
       });
     }
 
+    // =======================================================
+    // TABLA DE ÚLTIMAS INTERACCIONES
+    // =======================================================
     function renderEventsTable(events) {
       const tbody = document.getElementById("eventsBody");
       const recent = events.slice(0, 20);
 
       if (recent.length === 0) {
-        tbody.innerHTML = '<tr><td class="empty" colspan="4">Todavía no hay interacciones NFC o QR registradas para Tzura.</td></tr>';
-        document.getElementById("eventCount").textContent = "0 interacciones encontradas";
+        tbody.innerHTML =
+          '<tr><td class="empty" colspan="4">Todavía no hay interacciones NFC o QR registradas para Tzura.</td></tr>';
+
+        document.getElementById("eventCount").textContent =
+          "0 interacciones encontradas";
         return;
       }
 
       tbody.innerHTML = "";
 
-      // La lista viene de más reciente a más antigua.
-      // Por eso la más antigua de estas 20 será N.º 1
-      // y la más reciente será N.º 20.
       recent.forEach((event, index) => {
         const row = document.createElement("tr");
 
@@ -762,8 +787,8 @@
         const badge = document.createElement("span");
         badge.className = "event-badge";
         badge.textContent = event.event === "qr_scan" ? "QR scan" : "NFC tap";
-        eventType.appendChild(badge);
 
+        eventType.appendChild(badge);
         row.append(number, date, restaurant, eventType);
         tbody.appendChild(row);
       });
@@ -772,11 +797,9 @@
         `Mostrando ${recent.length} de ${formatNumber(events.length)} interacciones`;
     }
 
-    // -------------------------------------------------------
-    // RESEÑAS DIARIAS
-    // La tabla existente se reutiliza, con restaurant/day
-    // como clave de cada registro.
-    // -------------------------------------------------------
+    // =======================================================
+    // CONTROL MANUAL DE RESEÑAS
+    // =======================================================
     async function loadDailyReviews() {
       const today = madridDateKey();
 
@@ -796,16 +819,11 @@
     }
 
     function renderDailyReviews() {
-      const openingInput = document.getElementById("openingCount");
-      const closingInput = document.getElementById("closingCount");
+      document.getElementById("openingCount").value =
+        dailyRow?.opening_count ?? "";
 
-      if (dailyRow) {
-        openingInput.value = dailyRow.opening_count ?? "";
-        closingInput.value = dailyRow.closing_count ?? "";
-      } else {
-        openingInput.value = "";
-        closingInput.value = "";
-      }
+      document.getElementById("closingCount").value =
+        dailyRow?.closing_count ?? "";
 
       const opening = dailyRow?.opening_count;
       const closing = dailyRow?.closing_count;
@@ -815,18 +833,22 @@
       if (opening !== null && opening !== undefined &&
           closing !== null && closing !== undefined) {
         const difference = Number(closing) - Number(opening);
-        gainedEl.textContent = difference > 0 ? `+${formatNumber(difference)}` : formatNumber(difference);
+
+        gainedEl.textContent =
+          difference > 0 ? `+${formatNumber(difference)}` : formatNumber(difference);
 
         if (difference > 0) {
           noteEl.textContent = "El contador aumentó respecto a la apertura.";
         } else if (difference === 0) {
           noteEl.textContent = "El contador se mantuvo igual entre apertura y cierre.";
         } else {
-          noteEl.textContent = "El contador de cierre es inferior al de apertura. Revisá los valores ingresados.";
+          noteEl.textContent =
+            "El contador de cierre es inferior al de apertura. Revisá los valores ingresados.";
         }
       } else {
         gainedEl.textContent = "—";
-        noteEl.textContent = "Guardá los valores de apertura y cierre para calcular el resultado.";
+        noteEl.textContent =
+          "Guardá los valores de apertura y cierre para calcular el resultado.";
       }
     }
 
@@ -843,8 +865,6 @@
         button.disabled = true;
         button.textContent = "Guardando...";
 
-        // Volver a consultar el registro antes de guardar para
-        // conservar el otro valor (apertura o cierre).
         const today = madridDateKey();
 
         const { data: current, error: readError } = await supabaseClient
@@ -886,6 +906,7 @@
 
         dailyRow = data;
         renderDailyReviews();
+
         showMessage(
           which === "opening"
             ? "Apertura guardada correctamente."
@@ -901,11 +922,12 @@
       }
     }
 
-    // -------------------------------------------------------
-    // ACTUALIZAR PANEL
-    // -------------------------------------------------------
+    // =======================================================
+    // ACTUALIZAR DASHBOARD
+    // =======================================================
     async function loadDashboard() {
       if (refreshInProgress) return;
+
       refreshInProgress = true;
 
       try {
@@ -918,6 +940,7 @@
         await loadDailyReviews();
 
         document.getElementById("todayDate").textContent = formatMadridDate();
+
         document.getElementById("lastUpdated").textContent =
           "Última actualización: " +
           new Intl.DateTimeFormat("es-ES", {
@@ -933,7 +956,10 @@
       } catch (error) {
         console.error("Error actualizando dashboard:", error);
         setConnectionStatus(false, "Error de conexión");
-        showMessage(error.message || "No se pudieron actualizar los datos.", "error");
+        showMessage(
+          error.message || "No se pudieron actualizar los datos.",
+          "error"
+        );
       } finally {
         refreshInProgress = false;
       }
